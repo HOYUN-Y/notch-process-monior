@@ -72,4 +72,16 @@ final class LogicTests: XCTestCase {
         XCTAssertNotEqual(denied, permissionCheckMessage(trusted: false, time: "12:00:02"))
         XCTAssertTrue(permissionCheckMessage(trusted: true, time: "12:00:03").contains("허용되었습니다"))
     }
+
+    func testGroupFailuresCountsSameAppAndReasonWithoutDropping() {
+        let failures = [AXScanner.Failure(appName: "Safari Web Content", reason: "응답 없음"),
+                        AXScanner.Failure(appName: "Safari Web Content", reason: "응답 없음"),
+                        AXScanner.Failure(appName: "Safari Web Content", reason: "조회 실패"),
+                        AXScanner.Failure(appName: "Foo", reason: "응답 없음")]
+        let groups = groupFailures(failures)
+        XCTAssertEqual(groups.map(\.count), [2, 1, 1])
+        XCTAssertEqual(groups.map(\.reason), ["응답 없음", "조회 실패", "응답 없음"])
+        XCTAssertEqual(groups.reduce(0) { $0 + $1.count }, failures.count)
+        XCTAssertTrue(groupFailures([]).isEmpty)
+    }
 }
