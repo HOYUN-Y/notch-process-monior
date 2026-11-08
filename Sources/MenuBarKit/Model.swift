@@ -92,3 +92,12 @@ public func quitState(accepted: Bool, terminated: Bool, waited: TimeInterval, li
     if !accepted { return .notAccepted }
     return waited >= limit ? .stillRunning : .requested
 }
+
+/// 권한 확인 결과 문구. 시각을 넣어, 결과가 같아도 다시 확인했다는 것을 화면에서 알 수 있게 한다.
+public func permissionCheckMessage(trusted: Bool?, time: String) -> String {
+    switch trusted {
+    case nil: return "아직 확인하지 않았습니다."
+    case true?: return "\(time) 확인: 허용되었습니다."
+    case false?: return "\(time) 확인: macOS가 아직 이 앱을 허용하지 않았습니다."
+    }
+}

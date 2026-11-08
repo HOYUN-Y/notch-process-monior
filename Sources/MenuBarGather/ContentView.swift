@@ -158,20 +158,39 @@ private struct PermissionView: View {
     @ObservedObject var store: Store
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(store.permission == .revoked ? "손쉬운 사용 권한이 해제되었습니다" : "손쉬운 사용 권한이 필요합니다")
-                .font(.title2.weight(.semibold))
-            Text(store.permission == .revoked
-                 ? "실행 중에 권한이 해제되어 조회와 메뉴 열기를 중단했습니다. 시스템 설정에서 다시 허용한 뒤 ‘권한 다시 확인’을 누르세요. 반영되지 않으면 앱을 다시 실행하세요."
-                 : "다른 앱의 메뉴 막대 항목을 조회하고 메뉴 열기를 요청하려면 시스템 설정 > 개인정보 보호 및 보안 > 손쉬운 사용에서 이 앱을 허용해야 합니다. 화면 녹화 권한은 쓰지 않으며, 모든 처리는 이 Mac 안에서만 이루어집니다.")
-                .foregroundStyle(Theme.secondary).fixedSize(horizontal: false, vertical: true)
-            HStack {
-                Button("권한 요청") { store.requestPermission() }.buttonStyle(ThemedButtonStyle(prominent: true))
-                Button("시스템 설정 열기") { store.openSettings() }.buttonStyle(ThemedButtonStyle())
-                Button("권한 다시 확인") { store.refresh() }.buttonStyle(ThemedButtonStyle())
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(store.permission == .revoked ? "손쉬운 사용 권한이 해제되었습니다" : "손쉬운 사용 권한이 필요합니다")
+                    .font(.title2.weight(.semibold))
+                Text(store.permission == .revoked
+                     ? "실행 중에 권한이 해제되어 조회와 메뉴 열기를 중단했습니다. 시스템 설정에서 다시 허용한 뒤 ‘권한 다시 확인’을 누르세요."
+                     : "다른 앱의 메뉴 막대 항목을 조회하고 메뉴 열기를 요청하려면 시스템 설정 > 개인정보 보호 및 보안 > 손쉬운 사용에서 이 앱을 허용해야 합니다. 화면 녹화 권한은 쓰지 않으며, 모든 처리는 이 Mac 안에서만 이루어집니다.")
+                    .foregroundStyle(Theme.secondary).fixedSize(horizontal: false, vertical: true)
+                HStack {
+                    Button("권한 요청") { store.requestPermission() }.buttonStyle(ThemedButtonStyle(prominent: true))
+                    Button("시스템 설정 열기") { store.openSettings() }.buttonStyle(ThemedButtonStyle())
+                    Button("권한 다시 확인") { store.refresh() }.buttonStyle(ThemedButtonStyle())
+                }
+                Text(permissionCheckMessage(trusted: store.lastCheck?.trusted,
+                                            time: store.lastCheck?.date.formatted(date: .omitted, time: .standard) ?? ""))
+                    .foregroundStyle(store.lastCheck?.trusted == false ? Theme.warning : Theme.secondary)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("설정에서 이 앱이 켜져 있는데도 허용되지 않는다면").font(.headline)
+                    Text("앱을 다시 빌드하거나 교체하면 시스템에 남은 이전 허용 기록과 현재 앱이 맞지 않을 수 있습니다. 이때는 토글을 껐다 켜거나 앱을 다시 실행하는 것만으로 해결되지 않습니다.")
+                        .foregroundStyle(Theme.secondary)
+                    Text("1. 시스템 설정의 손쉬운 사용 목록에서 이 앱 항목을 선택하고 − 버튼으로 제거합니다.\n2. 아래 ‘이 앱 위치 열기’로 Finder에서 현재 앱을 선택한 뒤, 목록의 + 버튼으로 이 앱을 다시 추가하고 켭니다.\n3. ‘권한 다시 확인’을 누릅니다. 반영되지 않으면 앱을 다시 실행하세요.")
+                    Text("현재 실행 중인 앱").font(.subheadline.weight(.semibold))
+                    Text(Bundle.main.bundleURL.path).textSelection(.enabled)
+                        .font(.system(.callout, design: .monospaced)).foregroundStyle(Theme.secondary)
+                    Button("이 앱 위치 열기") { store.revealBundle() }.buttonStyle(ThemedButtonStyle())
+                }
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(16)
+                .background(Theme.panel, in: RoundedRectangle(cornerRadius: 8))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.border))
             }
+            .padding(32).frame(maxWidth: 560, alignment: .leading)
+            .frame(maxWidth: .infinity)
         }
-        .padding(32).frame(maxWidth: 520, maxHeight: .infinity, alignment: .center)
-        .frame(maxWidth: .infinity)
     }
 }

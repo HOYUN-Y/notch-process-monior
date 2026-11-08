@@ -28,3 +28,12 @@
 - 사용자가 PR 생성과 병합까지 명시적으로 승인했다. Git 브랜치(`feat/menu-bar-gather`)·커밋·PR·병합은 감독이 수행하며, 진행·병합 상태는 이 문서가 아니라 GitHub PR을 기준으로 확인한다. 구현자는 Git 작업을 하지 않았다.
 - 권한을 허용한 상태에서의 앱 검수는 아직 미완료다.
 - 0.1.0 MVP로 올리며, technical-validation.md와 PLAN.md의 미검증·남은 한계는 그대로 공개한다. 코드와 앱 번들은 변경하지 않았다.
+
+## 2026-11-09 — 권한 "다시 확인" 무반응 수정 (구현자, 브랜치 fix/accessibility-permission-refresh)
+
+- 원인: 시스템에 등록된 접근성 허용 기록의 서명 요건(cdhash)이 실행 중인 빌드와 맞지 않아 거부됨. 설정의 토글이 켜져 있어도 발생할 수 있고, 토글·재실행만으로는 해결되지 않는다. 앱이 거부 상태를 화면에 알리지 않아 무반응처럼 보였다. 근거와 한계는 technical-validation.md.
+- 수정 파일: `Sources/MenuBarKit/Model.swift`(확인 결과 문구 함수), `Sources/MenuBarGather/Store.swift`(마지막 확인 상태, Finder에서 앱 위치 선택), `Sources/MenuBarGather/ContentView.swift`(권한 안내 화면), `Tests/MenuBarKitTests/LogicTests.swift`(테스트 1개 추가), `README.md`(복구 안내, 재빌드 서명 표현 정정), docs.
+- 결정: 허용 판정은 기존 API 결과를 그대로 쓰고 서명 요건 완화·권한 초기화·인증서 설치·허용 강제는 하지 않는다. 재시작 버튼은 원인을 고치지 못해 추가하지 않았다. 처음에 넣은 확인 결과 텍스트의 접근성 라벨이 문구를 가려서 제거했다.
+- 빌드: 수정 후 번들을 만들었다(검증 중 발견한 라벨 문제 때문에 한 번 더 만들어 최종 번들은 마지막 것 하나).
+- 남은 일: 사용자의 재등록과 앱 자체 권한으로의 조회 확인(미완료).
+- 독립 검수자가 최신 코드에서 차단 결함이 없고 별도 경로의 `swift test` 8개와 `git diff --check`가 통과했다고 보고했다. 사용자의 실제 재등록과 앱 자체 권한으로의 조회 확인은 아직 미완료다. technical-validation.md의 두 표현(추가 번들 미발견, 동일 번들 재시작만으로는 해결되지 않음)을 보정했다.
