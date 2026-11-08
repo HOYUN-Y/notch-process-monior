@@ -9,6 +9,7 @@ struct MenuBarGatherApp: App {
         WindowGroup("메뉴 막대 모아보기") {
             ContentView(store: store)
         }
+        .defaultSize(width: 900, height: 640)
         .commands { CommandGroup(replacing: .newItem) {} }
     }
 }

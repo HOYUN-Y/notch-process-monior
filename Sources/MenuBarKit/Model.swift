@@ -101,3 +101,20 @@ public func permissionCheckMessage(trusted: Bool?, time: String) -> String {
     case false?: return "\(time) 확인: macOS가 아직 이 앱을 허용하지 않았습니다."
     }
 }
+
+/// 같은 앱·같은 원인의 조회 실패를 개수로 묶는다. 처음 나온 순서를 지키며 실패를 버리지 않는다.
+public struct FailureGroup: Hashable, Sendable {
+    public let appName: String
+    public let reason: String
+    public let count: Int
+}
+
+public func groupFailures(_ failures: [AXScanner.Failure]) -> [FailureGroup] {
+    var order: [AXScanner.Failure] = []
+    var counts: [AXScanner.Failure: Int] = [:]
+    for failure in failures {
+        if counts[failure] == nil { order.append(failure) }
+        counts[failure, default: 0] += 1
+    }
+    return order.map { FailureGroup(appName: $0.appName, reason: $0.reason, count: counts[$0]!) }
+}
