@@ -64,4 +64,12 @@ final class LogicTests: XCTestCase {
         XCTAssertEqual(quitState(accepted: true, terminated: true, waited: 1), .terminated)
         XCTAssertEqual(quitState(accepted: false, terminated: false, waited: 0), .notAccepted)
     }
+
+    func testPermissionCheckMessageShowsTimeAndResult() {
+        XCTAssertEqual(permissionCheckMessage(trusted: nil, time: ""), "아직 확인하지 않았습니다.")
+        let denied = permissionCheckMessage(trusted: false, time: "12:00:01")
+        XCTAssertTrue(denied.contains("12:00:01") && denied.contains("아직 이 앱을 허용하지 않았습니다"))
+        XCTAssertNotEqual(denied, permissionCheckMessage(trusted: false, time: "12:00:02"))
+        XCTAssertTrue(permissionCheckMessage(trusted: true, time: "12:00:03").contains("허용되었습니다"))
+    }
 }

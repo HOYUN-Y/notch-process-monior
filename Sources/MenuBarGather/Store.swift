@@ -21,6 +21,8 @@ enum RowStatus: Equatable {
 @MainActor
 final class Store: ObservableObject {
     @Published private(set) var permission: Permission = .notGranted
+    /// 가장 최근 권한 확인(시각, 결과). 미허용 화면에서 "다시 확인"의 결과를 보여 준다.
+    @Published private(set) var lastCheck: (date: Date, trusted: Bool)?
     @Published private(set) var entries: [MenuBarEntry] = []
     @Published private(set) var failures: [AXScanner.Failure] = []
     @Published private(set) var scannedApps = 0
@@ -56,6 +58,11 @@ final class Store: ObservableObject {
     /// 사용자가 누른 경우에만 시스템 권한 요청 창을 띄운다. 설정은 자동으로 바꾸지 않는다.
     func requestPermission() {
         _ = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
+    }
+
+    /// 실행 중인 번들을 Finder에서 선택해 보여 준다. 설정의 + 버튼으로 정확한 앱을 추가하게 하기 위함.
+    func revealBundle() {
+        NSWorkspace.shared.activateFileViewerSelecting([Bundle.main.bundleURL])
     }
 
     func openSettings() {
@@ -107,7 +114,9 @@ final class Store: ObservableObject {
 
     @discardableResult
     private func updatePermission() -> Bool {
-        if AXScanner.isTrusted {
+        let trusted = AXScanner.isTrusted
+        lastCheck = (Date(), trusted)
+        if trusted {
             everGranted = true
             permission = .granted
             return true
